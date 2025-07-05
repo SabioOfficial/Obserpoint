@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Obserpoint</title>
+
+        <link rel="stylesheet" href="global.css">
+        <link rel="stylesheet" href="style.css">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div class="heading__div">
+            <h1 class="heading__title">Obserpoint</h1>
+            <p class="heading__subtitle">Track your endpoints' health- now!</p>
+        </div>
+        <h2>Live Demo</h2>
+        <div id="live-api-target__div"></div>
+
+        <h2>Getting Started</h2>
+
+        <script>
+            const DEMO_URL = "https://live.alimad.xyz";
+
+            async function fetchJSON(url, options) {
+                const res = await fetch(url, options);
+                return await res.json();
+            }
+
+            async function ensureDemoTarget() {
+                const targets = await fetchJSON('/targets');
+                let target = targets.find(t => t.url === DEMO_URL);
+                if (!target) {
+                    const res = await fetch('/targets', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            name: 'Live Demo API',
+                            url: DEMO_URL,
+                            intervalSeconds: 30
+                        })
+                    });
+                    const data = await res.json();
+                    target = {
+                        targetId: data.targetId,
+                        name: 'Live Demo API',
+                        url: DEMO_URL,
+                        status: 'pending'
+                    };
+                }
+                return target;
+            }
+
+            async function fetchTargetStatus(url) {
+                try {
+                    const res = await fetch("/targets");
+                    const targets = await res.json();
+                    const target = targets.find(t => t.url === url);
+                    if (!target) return null;
+
+                    const checksRes = await fetch(`/targets/${target.targetId}/checks`);
+                    const checks = await checksRes.json();
+                    
+                    return { target, checks };
+                } catch (err) {
+                    console.error("Error fetching status: ", err);
+                    return null;
+                }
+            }
+
+            function computeUptime(checks) {
+                if (!checks.length) return 'N/A';
+                const upCount = checks.filter(c => c.up).length;
+                return ((upCount / checks.length) * 100).toFixed(1) + "%";
+            }
+
+            function renderStatusCard(target, checks) {
+                const container = document.getElementById('live-api-target__div');
+                container.innerHTML = '';
+
+                const latest = checks[0] || {};
+                const uptime = computeUptime(checks);
+                const response = latest.responseTimeMs != null ? `${latest.responseTimeMs}ms` : '--';
+                const status = target.status;
+
+                const color = status === 'up' ? 'var(--success)' :
+                              status === 'down' ? 'var(--danger)' : 'var(--warning)';
+                
+                const responseTime = latest.responseTimeMs;
+
+                const responseColor = responseTime == null ? 'var(--neutral-1)' :
+                                      responseTime <= 200 ? 'var(--success)' :
+                                      responseTime <= 1000 ? 'var(--warning)' :
+                                      'var(--danger)';
+                                
+                const div = document.createElement('div');
+                div.className = 'demo-embed__div';
+                div.style = `border-left: 6px solid ${color}`;
+                div.innerHTML = `
+                    <h3 class="demo-embed__name">${target.name}</h3>
+                    <p>URL: <a href="${target.url}" style="color: var(--info);" target="_blank">${target.url}</a></p>
+                    <p>Status: <span style="color: ${color}; font-weight: bold;">${status.toUpperCase()}</span></p>
+                    <p>Uptime: ${uptime}</p>
+                    <p>Response Time: <span style="color: ${responseColor};">${response}<span></p>
+                `;
+                container.appendChild(div);
+            }
+
+            async function updateDemoTarget() {
+                const target = await ensureDemoTarget();
+                const checks = await fetchJSON(`/targets/${target.targetId}/checks`);
+                renderStatusCard(target, checks);
+            }
+
+            updateDemoTarget();
+            setInterval(updateDemoTarget, 30000);
+        </script>
+    </body>
+</html>

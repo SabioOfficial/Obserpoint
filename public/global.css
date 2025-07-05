@@ -1,0 +1,50 @@
+:root {
+    --font-family: 'Figtree', sans-serif;
+}
+
+[data-theme="dark"] {
+    --primary: #2d88d2;
+    --secondary: #D2772D;
+    --info: #3C7DC3;
+    --warning: #DECF21;
+    --danger: #DF3F20;
+    --success: #36C96A;
+    --neutral-1: #7B7B7B;
+    --neutral-2: #575757;
+    --neutral-3: #3A3A3A;
+
+    --background-color: #171717;
+    --color: #FFF;
+}
+
+[data-theme="light"] {
+    --primary: #2B8DDD;
+    --secondary: #EB893A;
+    --info: #3390F5;
+    --warning: #FFED1B;
+    --danger: #FB593A;
+    --success: #3BDE74;
+    --neutral-1: #B8B8B8;
+    --neutral-2: #929292;
+    --neutral-3: #707070;
+
+    --background-color: #f5f5f5;
+    --color: #000;
+}
+
+* {
+    margin: 0;
+}
+
+body {
+    margin: 0;
+
+    color: var(--color);
+    background-color: var(--background-color);
+    
+    font-family: var(--font-family);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary);
+}

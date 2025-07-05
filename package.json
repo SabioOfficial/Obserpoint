@@ -1,0 +1,18 @@
+{
+  "name": "obserpoint",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "node-cron": "^4.2.0",
+    "node-fetch": "^2.7.0"
+  }
+}
