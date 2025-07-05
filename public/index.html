@@ -74,7 +74,7 @@
             function computeUptime(checks) {
                 if (!checks.length) return 'N/A';
                 const upCount = checks.filter(c => c.up).length;
-                return ((upCount / checks.length) * 100).toFixed(1) + "%";
+                return ((upCount / checks.length) * 100).toFixed(1);
             }
 
             function renderStatusCard(target, checks) {
@@ -95,6 +95,11 @@
                                       responseTime <= 200 ? 'var(--success)' :
                                       responseTime <= 1000 ? 'var(--warning)' :
                                       'var(--danger)';
+                
+                const uptimeColor = uptime == null ? 'var(--neutral-1)' :
+                                    uptime >= 99.9 ? 'var(--success)' :
+                                    uptime >= 99 ? 'var(--warning)' :
+                                    'var(--danger)';
                                 
                 const div = document.createElement('div');
                 div.className = 'demo-embed__div';
@@ -103,8 +108,8 @@
                     <h3 class="demo-embed__name">${target.name}</h3>
                     <p>URL: <a href="${target.url}" style="color: var(--info);" target="_blank">${target.url}</a></p>
                     <p>Status: <span style="color: ${color}; font-weight: bold;">${status.toUpperCase()}</span></p>
-                    <p>Uptime: ${uptime}</p>
-                    <p>Response Time: <span style="color: ${responseColor};">${response}<span></p>
+                    <p>Uptime: <span style="color: ${uptimeColor};">${uptime}%</span></p>
+                    <p>Response Time: <span style="color: ${responseColor};">${response}</span></p>
                 `;
                 container.appendChild(div);
             }
