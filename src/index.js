@@ -41,10 +41,6 @@ app.use(cors(corsOptions));
 
 app.use(express.static(path.join(__dirname, '../public')));
 
-const users = [];
-const refreshTokens = {};
-let userIdCounter = 1;
-
 let nextTargetId = 1;
 const targets = new Map();
 
@@ -54,22 +50,28 @@ function generateAccessToken(user) {
     });
 }
 
-function generateRefreshToken(user) {
+async function generateRefreshToken(user) {
     const token = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, {
         expiresIn: REFRESH_TOKEN_EXPIRATION
     });
 
-    let expiresInMs;
-    const value = parseInt(REFRESH_TOKEN_EXPIRATION.slice(0, -1));
-    const unit = REFRESH_TOKEN_EXPIRATION.slice(-1);
-    switch (unit) {
-        case 'm': expiresInMs = value * 60 * 1000; break;
-        case 'h': expiresInMs = value * 60 * 60 * 1000; break;
-        case 'd': expiresInMs = value * 24 * 60 * 60 * 1000; break;
-        default: expiresInMs = 7 * 24 * 60 * 60 * 1000;
-    }
+    let expiresInMs = 7 * 24 * 60 * 60 * 1000;
+    try {
+        const val = parseInt(REFRESH_TOKEN_EXPIRATION.slice(0, -1));
+        const unit = REFRESH_TOKEN_EXPIRATION.slice(-1);
+        if (unit === 'm') expiresInMs = val * 60 * 1000;
+        else if (unit === 'h') expiresInMs = val * 60 * 60 * 1000;
+        else if (unit === 'd') expiresInMs = val * 24 * 60 * 60 * 1000;
+    } catch {}
 
-    refreshTokens[token] = { userId: user.id, expires: Date.now() + expiresInMs };
+    await prisma.refreshToken.create({
+        data: {
+            token,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + expiresInMs)
+        }
+    });
+
     return token;
 }
 
@@ -98,6 +100,13 @@ app.post('/register', async (req, res) => {
     if (!username || !password) {
         return res.status(400).json({ message: 'Username and password are required.' });
     }
+
+    const usernameRegex = /^\w{3,20}$/;
+    if (!usernameRegex.test(username)) {
+        return res.status(400).json({
+            message: 'Invalid username format. Username can only contain letters, numbers, and underscores (_).'
+        });
+    }
     
     const existing = await prisma.user.findUnique({where: {username}});
     if (existing) {
@@ -113,72 +122,75 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    try {
+        const { username, password } = req.body;
 
-    const user = await prisma.user.findUnique({where: {username}});
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-        return res.status(400).json({message: 'Invalid credentials.'});
-    }
-
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    res.cookie('accessToken', accessToken, {httpOnly: true, maxAge: 15 * 60 * 1000});
-    res.cookie('refreshToken', refreshToken, {httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000})
-});
-
-app.post('/refresh-token', (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
-
-    if (!refreshToken) {
-        return res.status(401).json({ message: 'No refresh token provided.' });
-    }
-
-    if (!refreshTokens[refreshToken]) {
-        res.clearCookie('accessToken');
-        res.clearCookie('refreshToken');
-        return res.status(403).json({ message: 'Invalid refresh token.' });
-    }
-
-    jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, user) => {
-        if (err) {
-            delete refreshTokens[refreshToken];
-            res.clearCookie('accessToken');
-            res.clearCookie('refreshToken');
-            return res.status(403).json({ message: 'Expired or invalid refresh token.' });
+        const user = await prisma.user.findUnique({ where: { username } });
+        if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+            return res.status(401).json({ message: 'Invalid credentials.' });
         }
 
-        if (Date.now() > refreshTokens[refreshToken].expires) {
-            delete refreshTokens[refreshToken];
-            res.clearCookie('accessToken');
-            res.clearCookie('refreshToken');
-            return res.status(403).json({ message: 'Expired refresh token.' });
-        }
+        const accessToken = generateAccessToken(user);
+        const refreshToken = await generateRefreshToken(user);
 
-        const newAccessToken = generateAccessToken({ id: user.id, username: user.username });
-
-        let accessTokenMaxAgeMs = 15 * 60 * 1000;
-        try {
-            const val = parseInt(ACCESS_TOKEN_EXPIRATION.slice(0, -1));
-            const unit = ACCESS_TOKEN_EXPIRATION.slice(-1);
-            if (unit === 'm') accessTokenMaxAgeMs = val * 60 * 1000;
-            else if (unit === 'h') accessTokenMaxAgeMs = val * 60 * 60 * 1000;
-        } catch (e) {}
-
-        res.cookie('accessToken', newAccessToken, {
+        res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Lax',
-            maxAge: accessTokenMaxAgeMs
+            maxAge: 15 * 60 * 1000
         });
-        res.status(200).json({ message: 'Access token refreshed!' });
-    });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({ message: 'Logged in successfully' });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'An internal server error occurred during login.' });
+    }
 });
 
-app.post('/logout', (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
-    if (refreshToken) {
-        delete refreshTokens[refreshToken];
+app.post('/refresh-token', async (req, res) => {
+    const token = req.cookies.refreshToken;
+    if (!token) {
+        return res.status(401).json({ message: 'No refresh token provided.' });
+    }
+
+    const stored = await prisma.refreshToken.findUnique({ where: { token } });
+    if (!stored || stored.expiresAt.getTime() < Date.now()) {
+        await prisma.refreshToken.deleteMany({ where: { token } });
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        return res.status(403).json({ message: 'Refresh token expired or invalid.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: stored.userId } });
+    if (!user) {
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        return res.status(403).json({ message: 'User not found.' });
+    }
+
+    const accessToken = generateAccessToken(user);
+
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax',
+        maxAge: 15 * 60 * 1000
+    });
+
+    res.status(200).json({ message: 'Access token refreshed!' });
+});
+
+app.post('/logout', async (req, res) => {
+    const token = req.cookies.refreshToken;
+    if (token) {
+        await prisma.refreshToken.deleteMany({ where: { token } });
     }
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');

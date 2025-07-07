@@ -53,7 +53,6 @@ async function register() {
             body: JSON.stringify({ username, password })
         });
         const data = await res.json();
-        // Handle validation errors from express-validator
         if (data.errors) {
             const errorMsg = data.errors.map(e => e.msg).join('\n');
             displayMessage(errorMsg, 'error');
@@ -74,7 +73,7 @@ async function login() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
-            credentials: 'include'
+            credentials: 'include',
         });
         const data = await res.json();
         displayMessage(data.message, res.ok ? 'success' : 'error');
