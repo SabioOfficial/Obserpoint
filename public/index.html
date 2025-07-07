@@ -1,3 +1,4 @@
+      
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
     <head>
@@ -11,117 +12,100 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     </head>
     <body>
+        <header>
+            <a href="/"><img src="icons/signals/up.png" height="32" width="auto" class="dashboard__logo"/></a>
+            <button class="dashboard__btn">Dashboard</button>
+        </header>
+
         <div class="heading__div">
-            <h1 class="heading__title">Obserpoint</h1>
-            <p class="heading__subtitle">Track your endpoints' health- now!</p>
+            <h1 class="heading__title">How to do <span class="highlight__span">endpoints</span> status <span class="highlight__span">properly</span>.</h1>
+            <p class="heading__subtitle">Track your endpoints' health <span class="highlight__span">anywhere</span>, <span class="highlight__span">anytime</span>.</p>
+            <div class="call-to-action__div">
+                <button>Get Started</button>
+            </div>
         </div>
-        <h2>Live Demo</h2>
-        <div id="live-api-target__div"></div>
 
-        <h2>Getting Started</h2>
+        <div class="roadmap__div">
+            <div class="early-july__div div1 item__div">
+                <div class="item__content">
+                    <p class="roadmap__date">Early July</p>
+                    <h2 class="roadmap__title">Release</h2>
+                    <p>We are hoping to release Obserpoint in Early July.</p>
+                </div>
+            </div>
 
-        <script>
-            const DEMO_URL = "https://live.alimad.xyz";
+            <div class="mid-july__div div2 item__div">
+                <div class="item__content">
+                    <p class="roadmap__date">Mid July</p>
+                    <h2 class="roadmap__title">Charts & Alerting Integrations</h2>
+                    <p>Coming soon.</p>
+                </div>
+            </div>
 
-            async function fetchJSON(url, options) {
-                const res = await fetch(url, options);
-                return await res.json();
-            }
+            <div class="late-july__div div3 item__div">
+                <div class="item__content">
+                    <p class="roadmap__date">Late July</p>
+                    <h2 class="roadmap__title">Paid Plans</h2>
+                    <p>Coming soon.</p>
+                </div>
+            </div>
 
-            async function ensureDemoTarget() {
-                const targets = await fetchJSON('/targets');
-                let target = targets.find(t => t.url === DEMO_URL);
-                if (!target) {
-                    const res = await fetch('/targets', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            name: 'Live Demo API',
-                            url: DEMO_URL,
-                            intervalSeconds: 30
-                        })
-                    });
-                    const data = await res.json();
-                    target = {
-                        targetId: data.targetId,
-                        name: 'Live Demo API',
-                        url: DEMO_URL,
-                        status: 'pending'
-                    };
-                }
-                return target;
-            }
+            <div class="future__div div4 item__div">
+                <div class="item__content">
+                    <p class="roadmap__date">The Future</p>
+                    <h2 class="roadmap__title">More in the works</h2>
+                    <p>Stay tuned.</p>
+                </div>
 
-            async function fetchTargetStatus(url) {
-                try {
-                    const res = await fetch("/targets");
-                    const targets = await res.json();
-                    const target = targets.find(t => t.url === url);
-                    if (!target) return null;
+            </div>
+        </div>
 
-                    const checksRes = await fetch(`/targets/${target.targetId}/checks`);
-                    const checks = await checksRes.json();
-                    
-                    return { target, checks };
-                } catch (err) {
-                    console.error("Error fetching status: ", err);
-                    return null;
-                }
-            }
+        <div class="demo__div">
+            <h2 class="demo__title">We're suprisingly <span class="highlight-alt__span">simple to use</span><span id="toggle-question">?</span></h2>
+            <ul class="demo__bar">
+                <li class="demo__option active" id="demo-custom-statuspages__btn">
+                    <p>API</p>
+                </li>
+            </ul>
+            <div class="demo-page__div" id="demo__api">
+                <div class="demo-page__main-div">
+                    <h3 class="demo__code-title">API</h3>
+                    <p>
+                        There are multiple <span class="highlight__span">APIs</span> that you could use to create <span class="highlight__span">custom</span> statuspages. A
+                        paid subscription is <span class="highlight__span">not</span> required for accessing the <span class="highlight__span">API</span>.
+                    </p>
+                </div>
+                <div class="demo-page__secondary-div">
+                    <h4 class="endpoint__text"><span class="endpoint-method">GET</span> /targets/<span class="code__span">Target ID</span>/checks</h4>
+<pre><code>[
+    {
+        "timestamp": "2025-07-06T07:45:30.219Z",
+        "statusCode": 200,
+        "responseTimeMs": 193,
+        "up": true
+    },
+    {
+        "timestamp": "2025-07-06T07:45:00.232Z",
+        "statusCode": 200,
+        "responseTimeMs": 202,
+        "up": true
+    }
+]</code></pre>
+                </div>
+            </div>
+        </div>
 
-            function computeUptime(checks) {
-                if (!checks.length) return 'N/A';
-                const upCount = checks.filter(c => c.up).length;
-                return ((upCount / checks.length) * 100).toFixed(1);
-            }
+        <div class="live-demo__div">
+            <h2 class="live-demo__title">Still not <span class="highlight__span">convinced</span>?</h2>
+            <p class="live-demo__subtitle">Here's a few live demos. No, they're not just videos. It works.</p>
+            <div id="live-api-target__div" class="demo-grid"></div>
+        </div>
 
-            function renderStatusCard(target, checks) {
-                const container = document.getElementById('live-api-target__div');
-                container.innerHTML = '';
-
-                const latest = checks[0] || {};
-                const uptime = computeUptime(checks);
-                const response = latest.responseTimeMs != null ? `${latest.responseTimeMs}ms` : '--';
-                const status = target.status;
-
-                const color = status === 'up' ? 'var(--success)' :
-                              status === 'down' ? 'var(--danger)' : 'var(--warning)';
-                
-                const responseTime = latest.responseTimeMs;
-
-                const responseColor = responseTime == null ? 'var(--neutral-1)' :
-                                      responseTime <= 200 ? 'var(--success)' :
-                                      responseTime <= 1000 ? 'var(--warning)' :
-                                      'var(--danger)';
-                
-                const uptimeColor = uptime == null ? 'var(--neutral-1)' :
-                                    uptime >= 99.9 ? 'var(--success)' :
-                                    uptime >= 99 ? 'var(--warning)' :
-                                    'var(--danger)';
-                                
-                const div = document.createElement('div');
-                div.className = 'demo-embed__div';
-                div.style = `border-left: 6px solid ${color}`;
-                div.innerHTML = `
-                    <h3 class="demo-embed__name">${target.name}</h3>
-                    <p>URL: <a href="${target.url}" style="color: var(--info);" target="_blank">${target.url}</a></p>
-                    <p>Status: <span style="color: ${color}; font-weight: bold;">${status.toUpperCase()}</span></p>
-                    <p>Uptime: <span style="color: ${uptimeColor};">${uptime}%</span></p>
-                    <p>Response Time: <span style="color: ${responseColor};">${response}</span></p>
-                `;
-                container.appendChild(div);
-            }
-
-            async function updateDemoTarget() {
-                const target = await ensureDemoTarget();
-                const checks = await fetchJSON(`/targets/${target.targetId}/checks`);
-                renderStatusCard(target, checks);
-            }
-
-            updateDemoTarget();
-            setInterval(updateDemoTarget, 30000);
-        </script>
+        <script src="script.js" defer></script>
     </body>
 </html>

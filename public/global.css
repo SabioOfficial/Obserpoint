@@ -1,5 +1,6 @@
 :root {
     --font-family: 'Figtree', sans-serif;
+    --transition-speed: 150ms;
 }
 
 [data-theme="dark"] {
@@ -12,6 +13,7 @@
     --neutral-1: #7B7B7B;
     --neutral-2: #575757;
     --neutral-3: #3A3A3A;
+    --neutral-4: #101010;
 
     --background-color: #171717;
     --color: #FFF;
@@ -27,6 +29,7 @@
     --neutral-1: #B8B8B8;
     --neutral-2: #929292;
     --neutral-3: #707070;
+    --neutral-4: #484848;
 
     --background-color: #f5f5f5;
     --color: #000;
@@ -43,8 +46,100 @@ body {
     background-color: var(--background-color);
     
     font-family: var(--font-family);
+
+    overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+button {
+    cursor: pointer;
+    font-family: var(--font-family);
+
+    padding: 6px 16px;
+
+    background-color: var(--neutral-4);
+    color: var(--color);
+
+    border-radius: 6px;
+    border: solid 1px var(--primary);
+    box-shadow: 0 5px var(--primary);
+
+    transition: all var(--transition-speed) ease;
+}
+
+button:hover {
+    border-color: var(--secondary);
+    box-shadow: 0 5px var(--secondary);
+}
+
+button:active {
+    box-shadow: 0 1px var(--secondary);
+    transform: translateY(4px);
+}
+
+input {
+    cursor: text;
+    font-family: var(--font-family);
+
+    padding: 6px 16px;
+
+    background-color: var(--neutral-4);
+    color: var(--color);
+
+    border-radius: 6px;
+    border: solid 1px var(--primary);
+
+    outline: none;
+    
+    transition: all var(--transition-speed) ease;
+}
+
+input:focus {
+    border-color: var(--secondary);
+}
+
+a {
     color: var(--primary);
+    font-weight: 500;
+}
+
+pre {
+    margin: 16px 0;
+}
+
+code {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 1em 3em;
+    border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.95rem;
+    background-color: var(--neutral-4);
+    color: #f5f5f5;
+    white-space: pre-wrap;
+    overflow-wrap: normal;
+}
+
+.code__span {
+    background-color: var(--neutral-4);
+    padding: 0.25em 0.5em;
+    border-radius: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.95rem;
+    color: #f5f5f5;
+}
+
+.endpoint-method {
+    background-color: var(--neutral-4);
+    color: var(--info);
+    padding: 0.25em 0.75em;
+    border-radius: 8px;
+}
+
+.highlight__span {
+    color: var(--primary);
+}
+
+.highlight-alt__span {
+    color: var(--secondary);
 }

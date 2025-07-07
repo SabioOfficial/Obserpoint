@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Auth Test Page</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Auth Test</h1>
+
+            <input type="text" id="usernameInput" placeholder="Username">
+            <input type="password" id="passwordInput" placeholder="Password">
+
+            <button id="registerBtn">Register</button>
+            <button id="loginBtn">Login</button>
+            <button id="logoutBtn">Logout</button>
+            <button id="protectedBtn">Access Protected</button>
+
+            <div class="message-area" id="messageArea">
+                Authentication messages will appear here.
+            </div>
+        </div>
+
+        <script src="auth.js" defer></script>
+    </body>
+</html>
