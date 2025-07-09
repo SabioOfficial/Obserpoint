@@ -1,11 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
+        <title>Obserpoint • Dashboard</title>
+        <link rel="stylesheet" href="../global.css"/>
+        <link rel="stylesheet" href="style.css"/>
     </head>
     <body>
-        
+        <div class="layout-container__div">
+            <div class="sidebar__div">
+                <!-- <div class="sidebar__item-main">
+                    obserpoint logo (soon)
+                </div> -->
+                <div class="sidebar__item sidebar__item-top active" data-tab="home">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house-icon lucide-house"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                </div>
+                <div class="sidebar__item sidebar__item-top" data-tab="targets">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target-icon lucide-target"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                </div>
+                <div class="sidebar__item sidebar__item-bottom" style="margin-top: auto;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-icon lucide-book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg>
+                </div>
+                <div class="sidebar__item sidebar__item-bottom">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles-icon lucide-sparkles"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+                </div>
+            </div>
+            <div class="inner-sidebar__div">
+                <div class="inner-sidebar-group" data-section="home">
+                    <div class="inner-sidebar__item active" data-tab="home__user-settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cog-icon lucide-cog"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 22v-2"/><path d="m17 20.66-1-1.73"/><path d="M11 10.27 7 3.34"/><path d="m20.66 17-1.73-1"/><path d="m3.34 7 1.73 1"/><path d="M14 12h8"/><path d="M2 12h2"/><path d="m20.66 7-1.73 1"/><path d="m3.34 17 1.73-1"/><path d="m17 3.34-1 1.73"/><path d="m11 13.73-4 6.93"/></svg>
+                        User Settings
+                    </div>
+                    <div class="inner-sidebar__item" data-tab="home__usage-limits">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-credit-card-icon lucide-credit-card"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        Usage Limits
+                    </div>
+                </div>
+                <div class="inner-sidebar-group" data-section="targets">
+                    <div class="inner-sidebar__item" data-tab="targets__list">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crosshair-icon lucide-crosshair"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
+                        Target List
+                    </div>
+                </div>
+            </div>
+            <div class="main-content__div">
+                <div id="home__user-settings" class="tab-panel active">
+                    <div class="page-info">
+                        <h2 class="page-title">User Settings</h2>
+                        <p class="page-subtitle">This is the user settings.</p>
+                    </div>
+                    <div class="user-setting-wrapper__div">
+                        <div class="user-setting__div">
+                            <div class="user-setting-info__div">
+                                <h3>Pronouns</h3>
+                                <p>Choose your pronouns.</p>
+                            </div>
+                            <div class="user-setting-modify__div">
+                                <label for="pronouns">Pronouns</label>
+                                <input type="text" id="pronouns" name="pronouns" placeholder="he/him, she/her, they/them..."/>
+                                <button>Save</button>
+                            </div>
+                        </div>
+                        <div class="user-setting__div">
+                            <div class="user-setting-info__div">
+                                <h3>Email</h3>
+                                <p>Used for quicker logging in process and for the email notifier.</p>
+                            </div>
+                            <div class="user-setting-modify__div">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" placeholder="unnamed@emailprovider.domain"/>
+                                <button id="save-email">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="home__usage-limits" class="tab-panel">
+                    <h2 class="page-title">Usage Limits</h2>
+                </div>
+                <div id="targets__list" class="tab-panel">
+                    <h2 class="page-title">All Targets</h2>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function activateTab(tabId) {
+                document.querySelectorAll('.tab-panel').forEach(el => {
+                    el.classList.remove('active');
+                });
+                const el = document.getElementById(tabId);
+                if (el) el.classList.add('active');
+            }
+
+            function switchSection(section) {
+                document.querySelectorAll('.sidebar__item').forEach(i => i.classList.remove('active'));
+                document.querySelector(`.sidebar__item[data-tab="${section}"]`)?.classList.add('active');
+
+                document.querySelectorAll('.inner-sidebar-group').forEach(group => {
+                    if (group.dataset.section === section) {
+                        group.classList.add('active');
+                    } else {
+                        group.classList.remove('active');
+                    }
+                });
+
+                const defaultTab = document.querySelector(`.inner-sidebar-group[data-section="${section}"] .inner-sidebar__item`);
+                if (defaultTab) {
+                    document.querySelectorAll('.inner-sidebar__item').forEach(i => i.classList.remove('active'));
+                    defaultTab.classList.add('active');
+                    activateTab(defaultTab.dataset.tab);
+                }
+            }
+
+            document.querySelectorAll('.sidebar__item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.getAttribute('data-tab');
+                    switchSection(section);
+                });
+            });
+
+            document.querySelectorAll('.inner-sidebar__item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.inner-sidebar__item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    activateTab(item.dataset.tab);
+                });
+            });
+
+            switchSection('home');
+
+            async function loadProfile() {
+                const res = await fetch('/user/profile', { credentials: 'include' });
+                if (!res.ok) return window.location.pathname = '/auth/sign-in';
+                const { username, email } = await res.json();
+                document.getElementById('email').value = email || '';
+            }
+
+            document.getElementById('save-email').addEventListener('click', async () => {
+                const email = document.getElementById('email').value.trim();
+                const res = await fetch('/user/profile', {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    console.error(data.message || 'Failed to save.');
+                } else {
+                    console.log(data.message);
+                }
+            });
+
+            loadProfile();
+
+            async function fetchUserInfo() {
+                try {
+                    const res = await fetch('/protected', {
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) {
+                        window.location.pathname = '/auth/sign-in'
+                        return;
+                    }
+
+                    const data = await res.json();
+                    console.log(data.username);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            fetchUserInfo();
+        </script>
     </body>
 </html>

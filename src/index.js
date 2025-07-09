@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 
@@ -43,6 +44,40 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 let nextTargetId = 1;
 const targets = new Map();
+
+function chargeUser(creditsRequired) {
+    return async function(req, res, next) {
+        if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+
+        let usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
+
+        const now = new Date();
+        const isExpired = !usage || usage.resetAt < now;
+
+        if (isExpired) {
+            usage = await prisma.userUsage.upsert({
+                where: { userId: req.user.id },
+                update: { credits: 3000, resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+                create: {
+                    userId: req.user.id,
+                    credits: 3000,
+                    resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                }
+            });
+        }
+
+        if (usage.credits < creditsRequired) {
+            return res.status(429).json({ message: `Not enough credits. (${usage.credits.toFixed(2)} left)` });
+        }
+
+        await prisma.userUsage.update({
+            where: { userId: req.user.id },
+            data: { credits: { decrement: creditsRequired } }
+        });
+
+        next();
+    }
+}
 
 function generateAccessToken(user) {
     return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
@@ -91,7 +126,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-app.get('/', (req, res) => {
+app.get('/api/status', (req, res) => {
     res.send('🟢 Obserpoint Backend is alive!');
 });
 
@@ -107,7 +142,7 @@ app.post('/register', async (req, res) => {
             message: 'Invalid username format. Username can only contain letters, numbers, and underscores (_).'
         });
     }
-    
+
     const existing = await prisma.user.findUnique({where: {username}});
     if (existing) {
         return res.status(409).json({message: 'Username already taken.'});
@@ -198,70 +233,236 @@ app.post('/logout', async (req, res) => {
 });
 
 app.get('/protected', authenticateToken, (req, res) => {
-    res.status(200).json({ message: `Welcome, ${req.user.username}! You have access to protected data.`, userId: req.user.id });
+    res.status(200).json({
+        message: `Welcome, ${req.user.username}! You have access to protected data.`,
+        userId: req.user.id,
+        username: req.user.username
+    });
 });
 
+app.get('/user/profile', authenticateToken, async (req, res) => {
+    const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { username: true, email: true }
+    });
+    res.json(user);
+});
 
-app.post('/targets', authenticateToken, async (req, res) => {
+app.patch('/user/profile', authenticateToken, async (req, res) => {
+    const { email } = req.body || {};
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ message: 'Invalid email format.' });
+    }
+
+    const updated = await prisma.user.update({
+        where: { id: req.user.id },
+        data: { email: email || null },
+        select: { username: true, email: true }
+    });
+    res.json(updated);
+});
+
+app.post('/targets', authenticateToken, chargeUser(2), async (req, res) => {
     const {name, url, intervalSeconds} = req.body;
     if (!name || !url || !intervalSeconds) {
         return res.status(400).json({error: 'name, url and intervalSeconds are required >_<'});
     }
 
-    const id = nextTargetId++;
+    const created = await prisma.target.create({
+        data: {
+            name,
+            url,
+            intervalSeconds,
+            userId: req.user.id,
+        }
+    });
+
+    const targetId = created.id;
     const history = [];
+
     const job = cron.schedule(`*/${intervalSeconds} * * * * *`, async () => {
         const start = Date.now();
         let up = false, statusCode = null;
+        let responseTimeMs = 0;
         try {
             const r = await fetch(url);
             statusCode = r.status;
             up = r.ok;
+            responseTimeMs = Date.now() - start;
         } catch {
             up = false;
+            responseTimeMs = Date.now() - start;
         }
-        history.unshift({
+
+        const check = {
             timestamp: new Date().toISOString(),
             statusCode,
-            responseTimeMs: Date.now() - start,
+            responseTimeMs,
             up,
-        });
+        };
+        history.unshift(check);
         if (history.length > 1000) history.pop();
+
+        try {
+            await prisma.targetCheck.create({
+                data: {
+                    targetId,
+                    up,
+                    statusCode,
+                    responseTimeMs: check.responseTimeMs,
+                }
+            });
+        } catch (e) {
+            console.error(`[Check Logger] Failed to store check for target ${targetId}:`, e);
+        }
     }, {
         scheduled: true
     });
     job.start();
-    await prisma.target.create({
-        data: {name, url, intervalSeconds}
+    targets.set(targetId, {
+        name,
+        url,
+        intervalSeconds,
+        job,
+        history
     });
-    res.status(201).json({targetId: id});
+    res.status(201).json({ targetId });
 });
 
-app.get('/targets', (req, res) => {
-    const list = [];
-    for (const [id, t] of targets) {
-        const latest = t.history[0] || {};
-        list.push({
-            targetId: id,
+app.get('/targets', authenticateToken, chargeUser(1.5), async (req, res) => {
+    const targets = await prisma.target.findMany({
+        where: {
+            userId: req.user.id
+        },
+        include: {
+            checks: {
+                orderBy: { timestamp: 'desc' },
+                take: 1
+            }
+        }
+    });
+
+    const response = targets.map(t => {
+        const latest = t.checks[0] || {};
+        return {
+            targetId: t.id,
             name: t.name,
             url: t.url,
             status: latest.up === false ? 'down' : (latest.up === true ? 'up' : 'pending'),
             lastCheck: latest.timestamp || null,
-            responseTimeMs: latest.responseTimeMs || null
-        });
+            responseTimeMs: latest.responseTimeMs != null
+                ? latest.responseTimeMs
+                : latest.responseMs
+        };
+    });
+
+    res.json(response);
+});
+
+app.get('/targets/:id/checks', authenticateToken, chargeUser(1), async (req, res) => {
+    const targetId = parseInt(req.params.id);
+    const target = await prisma.target.findUnique({
+        where: { id: targetId }
+    });
+
+    if (!target || target.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied.' })
     }
-    res.json(list);
+
+    const checks = await prisma.targetCheck.findMany({
+        where: { targetId },
+        orderBy: { timestamp: 'desc' },
+        take: 50
+    });
+
+    res.json(checks);
 });
 
-app.get('/targets/:id/checks', (req, res) => {
-    const target = targets.get(+req.params.id);
-    if (!target) return res.sendStatus(404);
-    res.json(target.history.slice(0, 50));
+app.delete('/targets/:id', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const target = await prisma.target.findUnique({
+        where: { id }
+    });
+
+    if (!target || target.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied.' });
+    }
+
+    await prisma.targetCheck.deleteMany({ where: { targetId: id } });
+    await prisma.target.delete({ where: { id } });
+
+    res.status(200).json({ message: 'Target deleted.' });
+})
+
+app.get('/demo-targets', async (req, res) => {
+    const targets = await prisma.target.findMany({
+        where: { userId: null },
+        include: {
+            checks: {
+                orderBy: { timestamp: 'desc' },
+                take: 1
+            }
+        }
+    });
+
+    const response = targets.map(t => {
+        const latest = t.checks[0] || {};
+        return {
+            targetId: t.id,
+            name: t.name,
+            url: t.url,
+            status: latest.up === false ? 'down' : (latest.up === true ? 'up' : 'pending'),
+            lastCheck: latest.timestamp || null,
+            responseTimeMs: latest.responseTimeMs != null
+                ? latest.responseTimeMs
+                : latest.responseMs
+        };
+    });
+
+    res.json(response);
 });
 
-function setupDemoTargets() {
+app.get('/targets/:id/checks', authenticateToken, async (req, res) => {
+    const targetId = parseInt(req.params.id);
+    const target = await prisma.target.findUnique({
+        where: { id: targetId }
+    });
+
+    if (!target || target.userId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied.' })
+    }
+
+    const checks = await prisma.targetCheck.findMany({
+        where: { targetId },
+        orderBy: { timestamp: 'desc' },
+        take: 50
+    });
+
+    res.json(checks);
+});
+
+app.get('/demo-targets/:id/checks', async (req, res) => {
+    const targetId = parseInt(req.params.id);
+    const target = await prisma.target.findUnique({
+        where: { id: targetId }
+    });
+
+    if (!target || target.userId !== null) {
+        return res.status(403).json({ message: 'Access denied. This is not a demo target.' });
+    }
+
+    const checks = await prisma.targetCheck.findMany({
+        where: { targetId },
+        orderBy: { timestamp: 'desc' },
+        take: 50
+    });
+
+    res.json(checks);
+});
+
+async function setupDemoTargets() {
     console.log('Setting up demo targets...');
-    const demoTargetsToCreate = [
+    const demo = [
         { name: "Google", url: "https://www.google.com", intervalSeconds: 30 },
         { name: "Youtube", url: "https://www.youtube.com", intervalSeconds: 30 },
         { name: "Twitch", url: "https://twitch.tv", intervalSeconds: 30 },
@@ -272,38 +473,46 @@ function setupDemoTargets() {
         { name: "Netflix", url: "https://www.netflix.com", intervalSeconds: 30 }
     ];
 
-    for (const targetData of demoTargetsToCreate) {
-        if (Array.from(targets.values()).some(t => t.url === targetData.url)) continue;
+    for (const d of demo) {
+        const exists = await prisma.target.findFirst({ where: { url: d.url, userId: null } });
+        if (exists) continue;
 
-        const id = nextTargetId++;
-        const history = [];
-        const job = cron.schedule(`*/${targetData.intervalSeconds} * * * * *`, async () => {
+        const created = await prisma.target.create({
+            data: {
+                name: d.name,
+                url: d.url,
+                intervalSeconds: d.intervalSeconds,
+                userId: null
+            }
+        });
+
+        const job = cron.schedule(`*/${d.intervalSeconds} * * * * *`, async () => {
             const start = Date.now();
             let up = false, statusCode = null;
+            let responseTimeMs = 0;
             try {
-                const r = await fetch(targetData.url);
+                const r = await fetch(d.url);
                 statusCode = r.status;
                 up = r.ok;
+                responseTimeMs = Date.now() - start;
             } catch {
                 up = false;
+                responseTimeMs = Date.now() - start;
             }
-            history.unshift({
-                timestamp: new Date().toISOString(),
-                statusCode,
-                responseTimeMs: Date.now() - start,
-                up,
-            });
-            if (history.length > 1000) history.pop();
+            try {
+                await prisma.targetCheck.create({
+                    data: {
+                        targetId: created.id,
+                        up,
+                        statusCode,
+                        responseTimeMs: responseTimeMs,
+                    }
+                });
+            } catch (e) {
+                console.error(`[Demo Check] Failed for ${created.name}:`, e);
+            }
         }, { scheduled: true });
         job.start();
-        targets.set(id, { 
-            name: targetData.name, 
-            url: targetData.url, 
-            intervalSeconds: targetData.intervalSeconds, 
-            job, 
-            history 
-        });
-        console.log(`Created demo target: ${targetData.name}`);
     }
 }
 
@@ -313,6 +522,6 @@ app.listen(PORT, (err) => {
         process.exit(1);
     }
     console.log(`obserpoint backend listening on http://localhost:${PORT}`);
-    console.log(`Frontend expected at: ${FRONTEND_URL}`);
+    console.log(`Frontend served from '../public' and expected at: ${FRONTEND_URL}`);
     setupDemoTargets();
 });

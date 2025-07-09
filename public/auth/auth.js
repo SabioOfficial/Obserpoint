@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:4893';
+const API_BASE_URL = window.location.origin;
 
 const usernameInput = document.getElementById('usernameInput');
 const passwordInput = document.getElementById('passwordInput');

@@ -11,7 +11,10 @@ model User {
   id Int @id @default(autoincrement())
   username String @unique
   passwordHash String
+  email String? @unique
   refreshTokens RefreshToken[]
+  targets Target[]
+  usage UserUsage?
 }
 
 model Target {
@@ -19,6 +22,20 @@ model Target {
   name String
   url String @unique
   intervalSeconds Int
+  userId Int?
+  user User? @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  checks TargetCheck[]
+}
+
+model TargetCheck {
+  id Int @id @default(autoincrement())
+  targetId Int
+  target Target @relation(fields: [targetId], references: [id])
+  up Boolean
+  statusCode Int?
+  responseTimeMs Int?
+  timestamp DateTime @default(now())
 }
 
 model RefreshToken {
@@ -27,4 +44,13 @@ model RefreshToken {
   userId Int
   user User @relation(fields: [userId], references: [id])
   expiresAt DateTime
+}
+
+model UserUsage {
+  id Int @id @default(autoincrement())
+  userId Int @unique
+  user User @relation(fields: [userId], references: [id])
+  credits Float @default(3000)
+  updatedAt DateTime @updatedAt
+  resetAt DateTime
 }

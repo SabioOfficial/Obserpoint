@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Obserpoint • Sign In</title>
+        <title>Obserpoint • Sign Up</title>
         <link rel="stylesheet" href="/global.css">
         <link rel="stylesheet" href="/auth/style.css">
 
@@ -16,21 +16,21 @@
     </head>
     <body>
         <div class="info-section__div">
-            <h1 class="info-section__title highlight__span">Sign In</h1>
-            <p class="info-section__subtitle">Sign in to your <span class="highlight__span">existing Obserpoint account</span> to start tracking your endpoints!</p>
+            <h1 class="info-section__title highlight__span">Sign Up</h1>
+            <p class="info-section__subtitle">Sign up to the <span class="highlight__span">Obserpoint authentication system</span> to start tracking your endpoints!</p>
             <p class="info-section__attribution">Powered by Obserpoint Authentication <span class="highlight__span">1.0</span></p>
         </div>
         <div class="sign-in-section__div">
             <div class="main-area__div">
                 <div class="sign-in__input">
                     <label class="sign-in__label" for="username">Username</label><br>
-                    <input type="text" id="username" name="username" placeholder="Enter your unique username."><br>
+                    <input type="text" id="username" name="username" placeholder="Enter your desired username."><br>
                 </div>
                 <div class="sign-in__input">
                     <label class="sign-in__label" for="password">Password</label><br>
-                    <input type="password" id="password" name="password" placeholder="Enter your secure password."><br>
+                    <input type="password" id="password" name="password" placeholder="Enter a secure password. Standard password rules apply."><br>
                 </div>
-                <button class="login-in__btn" id="login">Log In</button>
+                <button class="signup__btn" id="signup">Sign Up</button>
 
                 <p class="authentication__txt" id="authenticationtxt">Authentication message!</p>
             </div>
@@ -44,7 +44,7 @@
             const elements = {
                 usernameInput: document.getElementById('username'),
                 passwordInput: document.getElementById('password'),
-                loginBtn: document.getElementById('login'),
+                signupBtn: document.getElementById('signup'),
                 authenticationText: document.getElementById('authenticationtxt'),
             }
 
@@ -58,17 +58,29 @@
                 elements.authenticationText.style.visibility = 'visible';
             }
 
-            async function login() {
+            async function register() {
                 const username = elements.usernameInput.value;
                 const password = elements.passwordInput.value;
-                elements.loginBtn.disabled = true;
-                elements.loginBtn.textContent = 'Logging in...';
+                elements.signupBtn.disabled = true;
+                elements.signupBtn.textContent = 'Signing up...';
+
+                if (elements.usernameInput.value.length > 20) {
+                    displayMessage('Your username must not be over 20 characters.');
+                    elements.signupBtn.disabled = false;
+                    elements.signupBtn.textContent = 'Sign Up';
+                    return;
+                } else if (/[^a-zA-Z0-9_]/.test(elements.usernameInput.value)) {
+                    displayMessage('Your username must not have any symbols except for "_".');
+                    elements.signupBtn.disabled = false;
+                    elements.signupBtn.textContent = 'Sign Up';
+                    return;
+                }
+
                 try {
-                    const res = await fetch(`${API_BASE_URL}/login`, {
+                    const res = await fetch(`${API_BASE_URL}/register`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({username, password}),
-                        credentials: 'include',
+                        body: JSON.stringify({username, password})
                     });
 
                     let data;
@@ -79,21 +91,21 @@
                     }
 
                     if (!res.ok) {
-                        displayMessage(data.message || 'Login was unsuccessful.');
-                    } else {
-                        window.location.pathname = '/dashboard';
+                        displayMessage(data.message || 'Signup was unsuccessful.');
+                    } else if (res.ok) {
+                        window.location.pathname = '/auth/sign-in'
                     }
                 } catch (err) {
                     displayMessage('An unexpected error occured. Try again later.');
                     console.error('An error has occured:' + err.message);
                 }
-                elements.loginBtn.disabled = false;
-                elements.loginBtn.textContent = 'Log in';
+                elements.signupBtn.disabled = false;
+                elements.signupBtn.textContent = 'Sign Up';
             }
 
             /* attaching */
 
-            elements.loginBtn.addEventListener('click', login);
+            elements.signupBtn.addEventListener('click', register);
         </script>
     </body>
 </html>

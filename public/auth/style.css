@@ -56,8 +56,20 @@ h1 {
     font-size: 0.8rem;
 }
 
-.login-in__btn {
+.login-in__btn, .signup__btn {
     margin-top: 8px;
+}
+
+.login-in__btn:disabled , .signup__btn:disabled {
+    filter: brightness(0.75);
+    cursor: not-allowed;
+}
+
+.authentication__txt {
+    visibility: hidden;
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: var(--danger);
 }
 
 @media (max-width: 1024px) {

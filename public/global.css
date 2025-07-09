@@ -14,6 +14,7 @@
     --neutral-2: #575757;
     --neutral-3: #3A3A3A;
     --neutral-4: #101010;
+    --neutral-5: #0A0A0A;
 
     --background-color: #171717;
     --color: #FFF;
@@ -30,6 +31,7 @@
     --neutral-2: #929292;
     --neutral-3: #707070;
     --neutral-4: #484848;
+    --neutral-5: #272727;
 
     --background-color: #f5f5f5;
     --color: #000;
@@ -66,12 +68,12 @@ button {
     transition: all var(--transition-speed) ease;
 }
 
-button:hover {
+button:not(:disabled):hover {
     border-color: var(--secondary);
     box-shadow: 0 5px var(--secondary);
 }
 
-button:active {
+button:not(:disabled):active {
     box-shadow: 0 1px var(--secondary);
     transform: translateY(4px);
 }

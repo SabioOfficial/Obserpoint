@@ -32,9 +32,14 @@ function renderStatusCard(target, checks) {
 	const container = document.getElementById('live-api-target__div');
 	const latest = checks[0] || {};
 	const uptime = computeUptime(checks);
-	const avgResponseTime = checks.length ?
-		Math.round(checks.reduce((acc, c) => acc + (c.responseTimeMs || 0), 0) / checks.length) :
-		null;
+	const avgResponseTime = checks.length
+		? Math.round(
+			checks.reduce((acc, c) => {
+				const tm = c.responseTimeMs != null ? c.responseTimeMs : c.responseMs;
+				return acc + (tm || 0);
+			}, 0) / checks.length
+			)
+		: null;
 	const response = avgResponseTime != null ? `${avgResponseTime}ms` : '--';
 	const status = target.status;
 	const signalImg =
@@ -68,10 +73,10 @@ function renderStatusCard(target, checks) {
             <span title="An uptime of over 99.9% is recommended for businesses whilst an uptime of over 99% is fine for casual projects." class="help__btn">?</span>
         </p>
         <p>
-            Response Time 
-            <span style="color: var(--${responseColor});">${response}</span>
-            <span title="A response time of less than 200ms is recommended for businesses whilst a response time of less than 1,000ms is fine for casual projects." class
-        </p>
+			Response Time 
+			<span style="color: var(--${responseColor});">${response}</span>
+			<span title="A response time of less than 200ms is recommended for businesses whilst a response time of less than 1,000ms is fine for casual projects." class="help__btn">?</span>
+		</p>
     `;
 	container.appendChild(div);
 }
@@ -99,23 +104,59 @@ async function updateDemoTargets() {
 	const container = document.getElementById('live-api-target__div');
 	container.innerHTML = '';
 	try {
-		const targets = await fetchJSON('/targets');
-		if (!Array.isArray(targets)) {
-			console.error("API did not return an array:", targets);
-			container.innerHTML = `<p style="color: var(--warning);">Could not load live demo data at the moment.</p>`;
+		let targets = [];
+		let isDemo = false;
+		let res = await fetch('/targets', {
+			credentials: 'include'
+		});
+
+		if (res.status === 401 || res.status === 403) {
+			isDemo = true;
+			res = await fetch('/demo-targets');
+		}
+
+		if (!res.ok) {
+			console.error('Failed to fetch targets:', res.status);
+			container.innerHTML = `<p style="color: var(--warning);">Could not load target data right now.</p>`;
 			return;
 		}
+
+		targets = await res.json();
+
+		if (!Array.isArray(targets)) {
+			console.error("Expected array but got:", targets);
+			container.innerHTML = `<p style="color: var(--warning);">Unexpected response from server.</p>`;
+			return;
+		}
+
 		if (targets.length === 0) {
 			container.innerHTML = `<p style="color: var(--info);">Demo targets are being initialized. Please wait...</p>`;
 			return;
 		}
+
 		for (const target of targets) {
-			const checks = await fetchJSON(`/targets/${target.targetId}/checks`);
+			let checks = [];
+			try {
+				const checksUrl = isDemo ?
+					`/demo-targets/${target.targetId}/checks` :
+					`/targets/${target.targetId}/checks`;
+
+				const checkRes = await fetch(checksUrl, {
+					credentials: isDemo ? undefined : 'include'
+				});
+
+				if (checkRes.ok) {
+					checks = await checkRes.json();
+				}
+			} catch (e) {
+				console.warn(`Failed to load checks for target ${target.targetId}`, e);
+			}
 			renderStatusCard(target, checks);
 		}
+
 		startLiveCycle();
 	} catch (error) {
-		console.error("Failed to update demo targets:", error);
+		console.error("Failed to update targets:", error);
 		container.innerHTML = `<p style="color: var(--danger);">Error connecting to the backend. Is the server running?</p>`;
 	}
 }
