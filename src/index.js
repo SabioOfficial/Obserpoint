@@ -3,7 +3,7 @@ require('dotenv').config();
 process.on('uncaughtException', console.error);
 process.on('unhandledRejection', console.error);
 
-const cron = require('node-cron');
+// const cron = require('node-cron');
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -45,15 +45,20 @@ const targets = new Map();
 
 function scheduleCheckForTarget(target) {
     if (targets.has(target.id)) {
-        targets.get(target.id).job.stop();
+        clearInterval(targets.get(target.id).job);
     }
 
-    const job = cron.schedule(`*/${target.intervalSeconds} * * * * *`, async () => {
+    const task = async () => {
         let up = false, statusCode = null, responseTimeMs = null;
         const start = Date.now();
 
+        const controller = new AbortController();
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, 15000);
+
         try {
-            const r = await fetch(target.url);
+            const r = await fetch(target.url, { signal: controller.signal });
             responseTimeMs = Date.now() - start;
             statusCode = r.status;
             up = r.ok;
@@ -61,29 +66,43 @@ function scheduleCheckForTarget(target) {
             up = false;
             statusCode = null;
             responseTimeMs = null;
+        } finally {
+            clearTimeout(timeout);
         }
         
         try {
+            const checkResult = {
+                targetId: target.id,
+                up,
+                statusCode,
+                responseTimeMs,
+            };
             await prisma.targetCheck.create({
-                data: {
-                    targetId: target.id,
-                    up,
-                    statusCode,
-                    responseTimeMs,
-                }
+                data: checkResult
             });
+
+            const targetInfo = targets.get(target.id);
+            if (targetInfo) {
+                targetInfo.history.push({ ...checkResult, timestamp: new Date() });
+                if (targetInfo.history.length > 50) {
+                    targetInfo.history.shift();
+                }
+            }
+
         } catch (e) {
             console.error(`[DB Error] Failed to store check for target ${target.id}:`, e);
         }
-    }, { scheduled: true });
+    };
 
-    job.start();
+    const intervalId = setInterval(task, target.intervalSeconds * 1000);
+
+    task(); 
 
     targets.set(target.id, {
         name: target.name,
         url: target.url,
         intervalSeconds: target.intervalSeconds,
-        job,
+        job: intervalId,
         history: []
     });
 }
@@ -255,13 +274,16 @@ app.get('/targets/:id/checks', authenticateToken, async (req, res) => {
     res.json(checks);
 });
 
+// --- START: MODIFIED CODE ---
+
 app.delete('/targets/:id', authenticateToken, async (req, res) => {
     const id = parseInt(req.params.id);
     const target = await prisma.target.findFirst({ where: { id, userId: req.user.id } });
     if (!target) return res.status(403).json({ message: 'Access denied.' });
 
     if (targets.has(id)) {
-        targets.get(id).job.stop();
+        // Use clearInterval to stop the interval job.
+        clearInterval(targets.get(id).job);
         targets.delete(id);
     }
     
@@ -269,6 +291,8 @@ app.delete('/targets/:id', authenticateToken, async (req, res) => {
     await prisma.target.delete({ where: { id } });
     res.status(200).json({ message: 'Target deleted.' });
 });
+
+// --- END: MODIFIED CODE ---
 
 app.get('/demo-targets', async (req, res) => {
     const demoTargets = await prisma.target.findMany({
