@@ -28,6 +28,12 @@ function getResponseColor(response) {
 	return 'danger';
 }
 
+function getStatusColor(status) {
+	if (status === 'up') return 'success';
+	else if (status === 'down') return 'danger';
+	else if (status === 'pending') return 'neutral-1';
+}
+
 function renderStatusCard(target, checks) {
 	const container = document.getElementById('live-api-target__div');
 	const latest = checks[0] || {};
@@ -35,7 +41,7 @@ function renderStatusCard(target, checks) {
 	const avgResponseTime = checks.length
 		? Math.round(
 			checks.reduce((acc, c) => {
-				const tm = c.responseTimeMs != null ? c.responseTimeMs : c.responseMs;
+				const tm = c.responseTimeMs;
 				return acc + (tm || 0);
 			}, 0) / checks.length
 			)
@@ -47,6 +53,7 @@ function renderStatusCard(target, checks) {
 		status === 'down' ? 'down.png' :
 		status === 'pending' ? 'pending.png' :
 		'warning.png';
+	const statusColor = getStatusColor(status);
 	const uptimeColor = getUptimeColor(uptime);
 	const responseColor = getResponseColor(response);
 	const div = document.createElement('div');
@@ -62,7 +69,7 @@ function renderStatusCard(target, checks) {
         </p>
         <p>
             <img src="icons/signals/${signalImg}" width="16" height="16" />
-            <span style="color: var(--primary); font-weight: bold;">
+            <span style="color: var(--${statusColor}); font-weight: bold;">
                 ${status.toUpperCase()}
                 ${latest.statusCode != null ? `(${latest.statusCode})` : ''}
             </span>
