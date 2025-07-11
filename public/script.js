@@ -21,7 +21,7 @@ function getUptimeColor(uptime) {
 }
 
 function getResponseColor(response) {
-	if (response === '--') return 'neutral-1';
+	if (response === '--' || response === null) return 'neutral-1';
 	const val = parseInt(response);
 	if (val <= 200) return 'success';
 	if (val <= 1000) return 'warning';
@@ -38,15 +38,17 @@ function renderStatusCard(target, checks) {
 	const container = document.getElementById('live-api-target__div');
 	const latest = checks[0] || {};
 	const uptime = computeUptime(checks);
-	const avgResponseTime = checks.length
+	const validResponses = checks
+		.map(c => c.responseTimeMs)
+		.filter(tm => typeof tm === 'number');
+	const avgResponseTime = validResponses.length
 		? Math.round(
-			checks.reduce((acc, c) => {
-				const tm = c.responseTimeMs;
-				return acc + (tm || 0);
-			}, 0) / checks.length
+				validResponses.reduce((sum, tm) => sum + tm, 0) / validResponses.length
 			)
 		: null;
-	const response = avgResponseTime != null ? `${avgResponseTime}ms` : '--';
+	const response = avgResponseTime != null
+		? `${avgResponseTime}ms`
+		: '--';
 	const status = target.status;
 	const signalImg =
 		status === 'up' ? 'up.png' :
@@ -59,7 +61,10 @@ function renderStatusCard(target, checks) {
 	const div = document.createElement('div');
 	div.className = `item__div status-${status}`;
 	div.innerHTML = `
-        <h3 class="demo-embed__name">${target.name}</h3>
+		<div class="demo-info__div">
+			<img class="demo-embed__favicon" height="27" width="27"/>
+			<h3 class="demo-embed__name">${target.name}</h3>
+		</div>
         <p>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -86,6 +91,27 @@ function renderStatusCard(target, checks) {
 		</p>
     `;
 	container.appendChild(div);
+
+	let faviconUrl, fallbackFavicon;
+	try {
+		const host = new URL(target.url).hostname;
+		faviconUrl = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+	} catch {
+		fallbackFavicon = new URL('/favicon.ico', target.url).href;
+	}
+	if (!faviconUrl) {
+		fallbackFavicon = fallbackFavicon || new URL('/favicon.ico', target.url).href;
+	}
+
+	const img = div.querySelector('.demo-embed__favicon');
+	if (faviconUrl) {
+		img.src = faviconUrl;
+		img.onerror = () => {
+			if (fallbackFavicon) img.src = fallbackFavicon;
+		};
+	} else if (fallbackFavicon) {
+		img.src = fallbackFavicon;
+	}
 }
 
 let liveIndex = 0;
@@ -110,62 +136,35 @@ function startLiveCycle() {
 async function updateDemoTargets() {
 	const container = document.getElementById('live-api-target__div');
 	container.innerHTML = '';
+
+	let targets = [];
 	try {
-		let targets = [];
-		let isDemo = false;
-		let res = await fetch('/targets', {
-			credentials: 'include'
-		});
-
-		if (res.status === 401 || res.status === 403) {
-			isDemo = true;
-			res = await fetch('/demo-targets');
-		}
-
+		const res = await fetch('/demo-targets');
 		if (!res.ok) {
-			console.error('Failed to fetch targets:', res.status);
-			container.innerHTML = `<p style="color: var(--warning);">Could not load target data right now.</p>`;
+			container.innerHTML = `<p style="color: var(--warning);">Failed to load demo targets.</p>`;
 			return;
 		}
-
 		targets = await res.json();
-
-		if (!Array.isArray(targets)) {
-			console.error("Expected array but got:", targets);
-			container.innerHTML = `<p style="color: var(--warning);">Unexpected response from server.</p>`;
-			return;
-		}
-
-		if (targets.length === 0) {
-			container.innerHTML = `<p style="color: var(--info);">Demo targets are being initialized. Please wait...</p>`;
-			return;
-		}
-
-		for (const target of targets) {
-			let checks = [];
-			try {
-				const checksUrl = isDemo ?
-					`/demo-targets/${target.targetId}/checks` :
-					`/targets/${target.targetId}/checks`;
-
-				const checkRes = await fetch(checksUrl, {
-					credentials: isDemo ? undefined : 'include'
-				});
-
-				if (checkRes.ok) {
-					checks = await checkRes.json();
-				}
-			} catch (e) {
-				console.warn(`Failed to load checks for target ${target.targetId}`, e);
-			}
-			renderStatusCard(target, checks);
-		}
-
-		startLiveCycle();
-	} catch (error) {
-		console.error("Failed to update targets:", error);
-		container.innerHTML = `<p style="color: var(--danger);">Error connecting to the backend. Is the server running?</p>`;
+	} catch {
+		container.innerHTML = `<p style="color: var(--danger);">Network error loading demo targets.</p>`;
+		return;
 	}
+
+	if (!Array.isArray(targets) || targets.length === 0) {
+		container.innerHTML = `<p style="color: var(--info);">No demo targets available.</p>`;
+		return;
+	}
+
+	for (const target of targets) {
+		let checks = [];
+		try {
+			const checkRes = await fetch(`/demo-targets/${target.targetId}/checks`);
+			if (checkRes.ok) checks = await checkRes.json();
+		} catch {}
+		renderStatusCard(target, checks);
+	}
+
+	startLiveCycle();
 }
 
 updateDemoTargets();

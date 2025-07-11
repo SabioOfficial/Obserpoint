@@ -3,7 +3,7 @@ require('dotenv').config();
 process.on('uncaughtException', console.error);
 process.on('unhandledRejection', console.error);
 
-// const cron = require('node-cron');
+const cron = require('node-cron');
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -107,26 +107,21 @@ function scheduleCheckForTarget(target) {
     });
 }
 
-function chargeUser(creditsRequired) {
-    return async function(req, res, next) {
-        if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-        const usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
-        const now = new Date();
-        const isExpired = !usage || usage.resetAt < now;
-        const currentUsage = isExpired ? await prisma.userUsage.upsert({
-            where: { userId: req.user.id },
-            update: { credits: 3000, resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000) },
-            create: { userId: req.user.id, credits: 3000, resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
-        }) : usage;
-        if (currentUsage.credits < creditsRequired) {
-            return res.status(429).json({ message: `Not enough credits. (${currentUsage.credits.toFixed(2)} left)` });
+function chargeUser(cost) {
+    return async (req, res, next) => {
+        if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+            const usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
+        if (!usage || usage.credits < cost) {
+            return res.status(429).json({
+                message: `Not enough credits. (${usage?.credits?.toFixed(2) || 0} left)`
+            });
         }
         await prisma.userUsage.update({
             where: { userId: req.user.id },
-            data: { credits: { decrement: creditsRequired } }
+            data: { credits: { decrement: cost } }
         });
         next();
-    }
+    };
 }
 
 function generateAccessToken(user) {
@@ -236,6 +231,12 @@ app.patch('/user/profile', authenticateToken, async (req, res) => {
     res.json(updated);
 });
 
+app.get('/user/usage', authenticateToken, async (req, res) => {
+    const usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
+    if (!usage) return res.json({ credits: 3000, resetAt: null });
+    res.json({ credits: usage.credits, resetAt: usage.resetAt });
+})
+
 app.post('/targets', authenticateToken, chargeUser(2), async (req, res) => {
     const { name, url, intervalSeconds } = req.body;
     if (!name || !url || !intervalSeconds) return res.status(400).json({ error: 'name, url and intervalSeconds are required' });
@@ -274,16 +275,12 @@ app.get('/targets/:id/checks', authenticateToken, async (req, res) => {
     res.json(checks);
 });
 
-// --- START: MODIFIED CODE ---
-// (in case someone was using old versions :skulk:)
-
 app.delete('/targets/:id', authenticateToken, async (req, res) => {
     const id = parseInt(req.params.id);
     const target = await prisma.target.findFirst({ where: { id, userId: req.user.id } });
     if (!target) return res.status(403).json({ message: 'Access denied.' });
 
     if (targets.has(id)) {
-        // Use clearInterval to stop the interval job.
         clearInterval(targets.get(id).job);
         targets.delete(id);
     }
@@ -292,8 +289,6 @@ app.delete('/targets/:id', authenticateToken, async (req, res) => {
     await prisma.target.delete({ where: { id } });
     res.status(200).json({ message: 'Target deleted.' });
 });
-
-// --- END: MODIFIED CODE ---
 
 app.get('/demo-targets', async (req, res) => {
     const demoTargets = await prisma.target.findMany({
@@ -311,7 +306,6 @@ app.get('/demo-targets/:id/checks', async (req, res) => {
     res.json(checks);
 });
 
-
 async function setupDemoTargets() {
     console.log('Checking for and setting up demo targets...');
     const demoData = [
@@ -319,14 +313,20 @@ async function setupDemoTargets() {
         { name: "Youtube", url: "https://www.youtube.com", intervalSeconds: 30 },
         { name: "Twitch", url: "https://twitch.tv", intervalSeconds: 30 },
         { name: "Facebook", url: "https://www.facebook.com", intervalSeconds: 30 },
-        { name: "Reeedit (fails)", url: "https://www.reeeddit.com", intervalSeconds: 30 },
+        { name: "Reeedit", url: "https://www.reeeddit.com", intervalSeconds: 30 },
         { name: "Wikipedia", url: "https://www.wikipedia.org", intervalSeconds: 30 },
     ];
+
     for (const d of demoData) {
-        const exists = await prisma.target.findFirst({ where: { url: d.url, userId: null } });
-        if (!exists) {
-            await prisma.target.create({ data: { ...d, userId: null } });
+        const existing = await prisma.target.findFirst({ where: { url: d.url, userId: null } });
+
+        if (existing) {
+            console.log(`Already exists: ${d.name}`);
+            scheduleCheckForTarget(existing);
+        } else {
+            const created = await prisma.target.create({ data: { ...d, userId: null } });
             console.log(`Created demo target: ${d.name}`);
+            scheduleCheckForTarget(created);
         }
     }
 }
@@ -337,6 +337,30 @@ async function initializeMonitoringJobs() {
     allTargets.forEach(scheduleCheckForTarget);
     console.log(`Initialization complete. Started ${allTargets.length} monitoring jobs.`);
 }
+
+cron.schedule('* * * * *', async () => {
+    const now = new Date();
+    try {
+        const expired = await prisma.userUsage.findMany({
+            where: { resetAt: { lt: now } }
+        });
+
+        if (expired.length) {
+            await Promise.all(expired.map(u =>
+                prisma.userUsage.update({
+                    where: { userId: u.userId },
+                    data: {
+                        credits: 3000,
+                        resetAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                    }
+                })
+            ));
+            console.log(`Reset ${expired.length} users' credits at ${now.toISOString()}`);
+        }
+    } catch (e) {
+        console.error('[Usage Reset Job] error:', e);
+    }
+});
 
 app.listen(PORT, async (err) => {
     if (err) {

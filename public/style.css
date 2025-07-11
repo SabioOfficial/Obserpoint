@@ -294,6 +294,13 @@ h2 {
     justify-content: center;
 }
 
+.demo-info__div {
+    display: flex;
+    flex-direction: row;
+    gap: 9px;
+    align-items: center;
+}
+
 .live-demo__title {
     text-align: center;
     margin: 0 16px;

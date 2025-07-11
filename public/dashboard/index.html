@@ -76,7 +76,14 @@
                     </div>
                 </div>
                 <div id="home__usage-limits" class="tab-panel">
-                    <h2 class="page-title">Usage Limits</h2>
+                    <div class="page-info">
+                        <h2 class="page-title">Usage Limits</h2>
+                        <p class="page-subtitle">This is your usage limits. Resets daily.</p>
+                    </div>
+                    <div class="usage-bar__wrapper">
+                        <div class="usage-bar__fill" style="width: 0%;"></div>
+                    </div>
+                    <p id="usage-text">Loading...</p>
                 </div>
                 <div id="targets__list" class="tab-panel">
                     <h2 class="page-title">All Targets</h2>
@@ -137,6 +144,23 @@
                 document.getElementById('email').value = email || '';
             }
 
+            async function loadUsageBar() {
+                const res = await fetch('/user/usage', { credentials: 'include' });
+                if (!res.ok) return console.error('Could not load usage');
+                const { credits, resetAt } = await res.json();
+                const max = 3000;
+                const used = max - credits;
+                const pct = Math.round((used / max) * 100);
+
+                const fill = document.querySelector('.usage-bar__fill');
+                fill.style.width = `${pct}%`;
+
+                const txt = document.getElementById('usage-text');
+                txt.textContent = `${credits.toFixed(0)} credits remaining (resets ${new Date(resetAt).toLocaleString()})`;
+            }
+
+            loadUsageBar();
+
             document.getElementById('save-email').addEventListener('click', async () => {
                 const email = document.getElementById('email').value.trim();
                 const res = await fetch('/user/profile', {
@@ -154,26 +178,6 @@
             });
 
             loadProfile();
-
-            async function fetchUserInfo() {
-                try {
-                    const res = await fetch('/protected', {
-                        credentials: 'include'
-                    });
-
-                    if (!res.ok) {
-                        window.location.pathname = '/auth/sign-in'
-                        return;
-                    }
-
-                    const data = await res.json();
-                    console.log(data.username);
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-
-            fetchUserInfo();
         </script>
     </body>
 </html>

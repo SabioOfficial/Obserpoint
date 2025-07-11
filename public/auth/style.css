@@ -72,6 +72,13 @@ h1 {
     color: var(--danger);
 }
 
+.auth-link {
+    font-size: 0.75rem;
+    color: var(--neutral-1);
+    text-underline-offset: 20%;
+    margin-top: 8px;
+}
+
 @media (max-width: 1024px) {
     body {
         flex-direction: column;
