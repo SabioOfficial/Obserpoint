@@ -275,6 +275,7 @@ app.get('/targets/:id/checks', authenticateToken, async (req, res) => {
 });
 
 // --- START: MODIFIED CODE ---
+// (in case someone was using old versions :skulk:)
 
 app.delete('/targets/:id', authenticateToken, async (req, res) => {
     const id = parseInt(req.params.id);
