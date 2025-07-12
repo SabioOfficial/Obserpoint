@@ -15,6 +15,7 @@ model User {
   refreshTokens RefreshToken[]
   targets Target[]
   usage UserUsage?
+  usageLogs UserUsageLog[]
 }
 
 model Target {
@@ -53,4 +54,14 @@ model UserUsage {
   credits Float @default(3000)
   updatedAt DateTime @updatedAt
   resetAt DateTime
+}
+
+model UserUsageLog {
+  id Int @id @default(autoincrement())
+  userId Int
+  type String
+  cost Float
+  timestamp DateTime @default(now())
+  user User @relation(fields: [userId], references: [id])
+  @@index([userId])
 }

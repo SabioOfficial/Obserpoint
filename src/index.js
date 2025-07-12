@@ -107,19 +107,31 @@ function scheduleCheckForTarget(target) {
     });
 }
 
-function chargeUser(cost) {
+function chargeUser(cost, type = 'unknown') {
     return async (req, res, next) => {
         if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
             const usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
+        
         if (!usage || usage.credits < cost) {
             return res.status(429).json({
                 message: `Not enough credits. (${usage?.credits?.toFixed(2) || 0} left)`
             });
         }
-        await prisma.userUsage.update({
-            where: { userId: req.user.id },
-            data: { credits: { decrement: cost } }
-        });
+
+        await prisma.$transaction([
+            prisma.userUsage.update({
+                where: { userId: req.user.id },
+                data: { credits: { decrement: cost } }
+            }),
+            prisma.UserUsageLog.create({
+                data: {
+                    userId: req.user.id,
+                    type,
+                    cost
+                }
+            })
+        ]);
+
         next();
     };
 }
@@ -235,9 +247,44 @@ app.get('/user/usage', authenticateToken, async (req, res) => {
     const usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
     if (!usage) return res.json({ credits: 3000, resetAt: null });
     res.json({ credits: usage.credits, resetAt: usage.resetAt });
-})
+});
 
-app.post('/targets', authenticateToken, chargeUser(2), async (req, res) => {
+app.get('/user/usage-log', authenticateToken, async (req, res) => {
+    const logs = await prisma.userUsageLog.findMany({
+        where: { userId: req.user.id },
+        orderBy: { timestamp: 'asc' }
+    });
+
+    const usageByDay = {};
+
+    for (const log of logs) {
+        const date = log.timestamp.toISOString().slice(0, 10);
+        if (!usageByDay[date]) usageByDay[date] = {};
+        usageByDay[date][log.type] = (usageByDay[date][log.type] || 0) + log.cost;
+    }
+
+    const result = Object.entries(usageByDay).map(([date, types]) => ([
+        date,
+        ...types
+    ]));
+
+    res.json(result);
+});
+
+app.get('/user/usage-breakdown', authenticateToken, async (req, res) => {
+    const logs = await prisma.userUsageLog.findMany({
+        where: { userId: req.user.id }
+    });
+
+    const breakdown = {};
+    for (const { type, cost } of logs) {
+        breakdown[type] = (breakdown[type] || 0) + cost;
+    }
+
+    res.json(breakdown);
+});
+
+app.post('/targets', authenticateToken, chargeUser(2, 'Create'), async (req, res) => {
     const { name, url, intervalSeconds } = req.body;
     if (!name || !url || !intervalSeconds) return res.status(400).json({ error: 'name, url and intervalSeconds are required' });
     const created = await prisma.target.create({
@@ -259,7 +306,7 @@ const getTargetsResponse = (targets) => targets.map(t => {
     };
 });
 
-app.get('/targets', authenticateToken, chargeUser(1.5), async (req, res) => {
+app.get('/targets', authenticateToken, chargeUser(1.5, 'Mass get'), async (req, res) => {
     const userTargets = await prisma.target.findMany({
         where: { userId: req.user.id },
         include: { checks: { orderBy: { timestamp: 'desc' }, take: 1 } }
@@ -267,7 +314,7 @@ app.get('/targets', authenticateToken, chargeUser(1.5), async (req, res) => {
     res.json(getTargetsResponse(userTargets));
 });
 
-app.get('/targets/:id/checks', authenticateToken, async (req, res) => {
+app.get('/targets/:id/checks', authenticateToken, chargeUser(1, 'Get'), async (req, res) => {
     const targetId = parseInt(req.params.id);
     const target = await prisma.target.findFirst({ where: { id: targetId, userId: req.user.id } });
     if (!target) return res.status(403).json({ message: 'Access denied.' });

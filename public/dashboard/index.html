@@ -19,6 +19,9 @@
                 <div class="sidebar__item sidebar__item-top" data-tab="targets">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target-icon lucide-target"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                 </div>
+                <div class="sidebar__item sidebar__item-top" data-tab="integrations">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-blocks-icon lucide-blocks"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg>
+                </div>
                 <div class="sidebar__item sidebar__item-bottom" style="margin-top: auto;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-icon lucide-book"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg>
                 </div>
@@ -41,6 +44,20 @@
                     <div class="inner-sidebar__item" data-tab="targets__list">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crosshair-icon lucide-crosshair"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
                         Target List
+                    </div>
+                    <div class="inner-sidebar__item" data-tab="targets__target-config">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        Target Configuration
+                    </div>
+                    <div class="inner-sidebar__item" data-tab="targets__target-creation">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        i luv men
+                    </div>
+                </div>
+                <div class="inner-sidebar-group" data-section="integrations">
+                    <div class="inner-sidebar__item" data-tab="integrations__marketplace">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-store-icon lucide-store"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg>
+                        Marketplace
                     </div>
                 </div>
             </div>
@@ -80,17 +97,55 @@
                         <h2 class="page-title">Usage Limits</h2>
                         <p class="page-subtitle">This is your usage limits. Resets daily.</p>
                     </div>
-                    <div class="usage-bar__wrapper">
-                        <div class="usage-bar__fill" style="width: 0%;"></div>
+                    <div class="usage-bar__wrapper" id="usage-bar-wrapper">
+                        
                     </div>
                     <p id="usage-text">Loading...</p>
                 </div>
                 <div id="targets__list" class="tab-panel">
-                    <h2 class="page-title">All Targets</h2>
+                    <div class="page-info">
+                        <h2 class="page-title">All Targets</h2>
+                        <p class="page-subtitle">All of your targets will be displayed here.</p>
+                    </div>
+                    <div class="targets-list__div">
+                        <div class="target-create__div">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus-icon lucide-circle-plus"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                            Create a Target
+                        </div>
+                        <!-- targets should get created here -->
+                    </div>
+                </div>
+                <div id="targets__target-creation" class="tab-panel"> <!-- this tab panel SHOULD NOT BE IN THE SIDEBARS, ONLY APPEARS WHEN CREATING A NEW TARGET -->
+                    <div class="page-info">
+                        <div class="target-config-name__wrapper">
+                            <h2 class="page-title">Target Name</h2> <!-- target name should be able to be changed here; should only appear when NOT in edit name -->
+                            <input class="page-title__input" type="text" style="display: none;"/> <!-- only appear after pen svg is clicked -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg> <!-- pen svg; only appears when NOT editing the name -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check" style="display: none;"><path d="M20 6 9 17l-5-5"/></svg> <!-- save svg; only appears when editing the name -->
+                        </div>
+                        <p class="page-subtitle"><i>Target Note</i></p>
+                    </div>
+                    <input type="range" min="30" max="1200"/>
+                </div>
+                <div id="targets__target-config" class="tab-panel">
+                    <div class="page-info">
+                        <div class="target-config-name__wrapper">
+                            <h2 class="page-title">Target Name</h2> <!-- target name should be able to be changed here; should only appear when NOT in edit name -->
+                            <input class="page-title__input" type="text" style="display: none;"/> <!-- only appear after pen svg is clicked -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg> <!-- pen svg; only appears when NOT editing the name -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check" style="display: none;"><path d="M20 6 9 17l-5-5"/></svg> <!-- save svg; only appears when editing the name -->
+                        </div>
+                        <p class="page-subtitle"><i>Target Note</i></p>
+                    </div>
+                </div>
+                <div id="integrations__marketplace" class="tab-panel">
+                    <div class="page-info">
+                        <h2 class="page-title">Integrations Marketplace</h2>
+                        <p class="page-subtitle">Coming soon. Used to install integrations.</p>
+                    </div>
                 </div>
             </div>
         </div>
-
         <script>
             function activateTab(tabId) {
                 document.querySelectorAll('.tab-panel').forEach(el => {
@@ -145,18 +200,42 @@
             }
 
             async function loadUsageBar() {
-                const res = await fetch('/user/usage', { credentials: 'include' });
-                if (!res.ok) return console.error('Could not load usage');
-                const { credits, resetAt } = await res.json();
-                const max = 3000;
-                const used = max - credits;
-                const pct = Math.round((used / max) * 100);
+                const [usageRes, breakdownRes] = await Promise.all([
+                    fetch('/user/usage', { credentials: 'include' }),
+                    fetch('/user/usage-breakdown', { credentials: 'include' })
+                ]);
 
-                const fill = document.querySelector('.usage-bar__fill');
-                fill.style.width = `${pct}%`;
+                if (!usageRes.ok || !breakdownRes.ok) return console.error('Failed to load usage');
 
-                const txt = document.getElementById('usage-text');
-                txt.textContent = `${credits.toFixed(0)} credits remaining (resets ${new Date(resetAt).toLocaleString()})`;
+                const { credits, resetAt } = await usageRes.json();
+                const breakdown = await breakdownRes.json();
+
+                const used = 3000 - credits;
+                const usageBar = document.getElementById('usage-bar-wrapper');
+                usageBar.innerHTML = '';
+
+                const colorMap = {
+                    'Get': '#3BDE74',
+                    'Mass get': '#36C96A',
+                    'Create': '#3C7DC3',
+                    'Get demo': '#D2772D',
+                    'Unknown': '#3A3A3A'
+                } // TODO use the css variables later on
+
+                const totalUsed = Object.values(breakdown).reduce((a, b) => a + b, 0);
+
+                for (const [type, cost] of Object.entries(breakdown)) {
+                    const pct = (cost / 3000) * 100;
+                    const segment = document.createElement('div');
+                    segment.className = 'usage-segment';
+                    segment.style.width = `${pct}%`;
+                    segment.style.backgroundColor = colorMap[type] || colorMap.Unknown;
+                    segment.title = `${type}: ${cost.toFixed(1)} credits`;
+                    usageBar.appendChild(segment);
+                }
+
+                const text = document.getElementById('usage-text');
+                text.textContent = `${credits.toFixed(0)} credits remaining (resets ${new Date(resetAt).toLocaleString()})`;
             }
 
             loadUsageBar();

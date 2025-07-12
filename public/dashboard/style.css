@@ -172,8 +172,8 @@ body {
 
 .usage-bar__wrapper {
     width: 100%;
-    background: var(--neutral-2);
-    border-radius: 8px;
+    border: dashed 2px var(--neutral-3);
+    border-radius: 12px;
     overflow: hidden;
     height: 24px;
     margin: 16px 0;
@@ -183,4 +183,46 @@ body {
     height: 100%;
     background: var(--color);
     transition: width 0.3s ease;
+}
+
+.targets-list__div {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.target-create__div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    font-size: 20px;
+    border: dashed 2px var(--neutral-3);
+    border-radius: 12px;
+    padding: 24px 16px;
+    cursor: pointer;
+}
+
+.target-config-name__wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+.target-config-name__wrapper > svg {
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.target-config-name__wrapper > .page-title {
+    margin-bottom: 0;
+}
+
+.target-config-name__wrapper > .page-title__input {
+    font-size: 1.5rem;
+    font-weight: 500;
 }
