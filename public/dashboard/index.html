@@ -45,14 +45,6 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crosshair-icon lucide-crosshair"><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></svg>
                         Target List
                     </div>
-                    <div class="inner-sidebar__item" data-tab="targets__target-config">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                        Target Configuration
-                    </div>
-                    <div class="inner-sidebar__item" data-tab="targets__target-creation">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                        i luv men
-                    </div>
                 </div>
                 <div class="inner-sidebar-group" data-section="integrations">
                     <div class="inner-sidebar__item" data-tab="integrations__marketplace">
@@ -112,30 +104,60 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus-icon lucide-circle-plus"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
                             Create a Target
                         </div>
-                        <!-- targets should get created here -->
                     </div>
                 </div>
-                <div id="targets__target-creation" class="tab-panel"> <!-- this tab panel SHOULD NOT BE IN THE SIDEBARS, ONLY APPEARS WHEN CREATING A NEW TARGET -->
+                <div id="targets__target-creation" class="tab-panel">
                     <div class="page-info">
                         <div class="target-config-name__wrapper">
-                            <h2 class="page-title">Target Name</h2> <!-- target name should be able to be changed here; should only appear when NOT in edit name -->
-                            <input class="page-title__input" type="text" style="display: none;"/> <!-- only appear after pen svg is clicked -->
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg> <!-- pen svg; only appears when NOT editing the name -->
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check" style="display: none;"><path d="M20 6 9 17l-5-5"/></svg> <!-- save svg; only appears when editing the name -->
+                            <h2 class="page-title" id="target-name-display">Target Name</h2>
+                            <input class="page-title__input" id="target-name-input" type="text" style="display: none;"/>
+                            <svg id="edit-name-btn" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+                            <svg id="save-name-btn" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check" style="display: none;"><path d="M20 6 9 17l-5-5"/></svg> <!-- save svg; only appears when editing the name -->
                         </div>
-                        <p class="page-subtitle"><i>Target Note</i></p>
+                        <div class="target-config-note__wrapper">
+                            <p class="page-subtitle"><i>Target Note</i></p>
+                            <input class="page-subtitle__input" type="text" style="display: none;"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check" style="display: none;"><path d="M20 6 9 17l-5-5"/></svg> <!-- save svg; only appears when editing the name -->
+                        </div>
                     </div>
-                    <input type="range" min="30" max="1200"/>
+                    <div class="rate__wrapper">
+                        <label for="interval__select">Rate</label><br>
+                        <select id="interval__select">
+                            <option value="30">30s</option>
+                            <option value="60">1m</option>
+                            <option value="120">2m</option>
+                            <option value="180">3m</option>
+                            <option value="300">5m</option>
+                            <option value="600">10m</option>
+                            <option value="1200">20m</option>
+                        </select>
+                    </div>
+                    <div class="url-input__wrapper">
+                        <label for="url__input">Url</label><br>
+                        <input type="url" placeholder="https://your-website.extension/api-route/api-name" id="url__input">
+                    </div>
+                    <div class="action__buttons">
+                        <button onclick="backToTargetsList()" class="back__button">Back</button>
+                        <button class="create__button" id="create-target-btn">Create</button>
+                    </div>
                 </div>
                 <div id="targets__target-config" class="tab-panel">
                     <div class="page-info">
                         <div class="target-config-name__wrapper">
-                            <h2 class="page-title">Target Name</h2> <!-- target name should be able to be changed here; should only appear when NOT in edit name -->
-                            <input class="page-title__input" type="text" style="display: none;"/> <!-- only appear after pen svg is clicked -->
+                            <h2 class="page-title">Target Name</h2>
+                            <input class="page-title__input" type="text" style="display: none;"/>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg> <!-- pen svg; only appears when NOT editing the name -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check" style="display: none;"><path d="M20 6 9 17l-5-5"/></svg> <!-- save svg; only appears when editing the name -->
                         </div>
                         <p class="page-subtitle"><i>Target Note</i></p>
+                    </div>
+                    <div class="page-warning__div">
+                        <div class="page-warning-info__div">
+                            <p class="page-warning-title">Hold Up!</p>
+                            <p>It looks like you haven't saved yet.</p>
+                        </div>
+                        <button>Save</button>
                     </div>
                 </div>
                 <div id="integrations__marketplace" class="tab-panel">
@@ -147,6 +169,104 @@
             </div>
         </div>
         <script>
+            const createTargetButton = document.querySelector('.target-create__div');
+            const targetsListPanel = document.getElementById('targets__list');
+            const targetCreationPanel = document.getElementById('targets__target-creation');
+
+            const nameDisplay = document.getElementById('target-name-display');
+            const nameInput = document.getElementById('target-name-input');
+            const editBtn = document.getElementById('edit-name-btn');
+            const saveBtn = document.getElementById('save-name-btn');
+
+            const createBtn = document.getElementById('create-target-btn');
+            const intervalSelect = document.getElementById('interval__select');
+            const urlInput = document.getElementById('url__input');
+
+            const defaultTargetName = "Untitled Target";
+
+            let currentTargetName = "Untitled Target";
+
+            if (createTargetButton) {
+                createTargetButton.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+                    targetCreationPanel.classList.add('active');
+                    document.querySelectorAll('.inner-sidebar__item').forEach(i => i.classList.remove('active'));
+
+                    console.log(defaultTargetName);
+
+                    currentTargetName = defaultTargetName;
+                    nameDisplay.textContent = currentTargetName;
+                    nameInput.value = currentTargetName;
+                    nameDisplay.style.display = '';
+                    nameInput.style.display = 'none';
+                    editBtn.style.display = '';
+                    saveBtn.style.display = 'none';
+                });
+            }
+
+            function backToTargetsList() {
+                document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+                targetsListPanel.classList.add('active');
+                document.querySelector('[data-tab="targets__list"]').classList.add('active');
+            }
+
+            editBtn.addEventListener('click', () => {
+                nameDisplay.style.display = 'none';
+                nameInput.style.display = '';
+                editBtn.style.display = 'none';
+                saveBtn.style.display = '';
+                nameInput.focus();
+            });
+
+            saveBtn.addEventListener('click', () => {
+                currentTargetName = nameInput.value.trim() || 'Untitled Target';
+                nameDisplay.textContent = currentTargetName;
+                nameDisplay.style.display = '';
+                nameInput.style.display = 'none';
+                editBtn.style.display = '';
+                saveBtn.style.display = 'none';
+            });
+
+            createBtn.addEventListener('click', async () => {
+                const interval = intervalSelect.value;
+
+                if (!['30', '60', '120', '180', '300', '600', '1200'].includes(interval)) {
+                    alert("bro don't you dare try to exploit obserpoint he is my buddy");
+                    return;
+                }
+
+                const urlPattern = /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/;
+                if (!urlPattern.test(urlInput.value.trim())) {
+                    alert("Please enter a valid URL.");
+                    return;
+                }
+                
+                try {
+                    const res = await fetch('/targets', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: currentTargetName,
+                            intervalSeconds: Number(interval),
+                            url: urlInput.value.trim()
+                        }),
+                        credentials: 'include'
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) {
+                        alert('Failed to create target: ' + (data.message || 'Unknown error'));
+                        return;
+                    }
+
+                    loadTargets();
+                    backToTargetsList();
+                } catch (error) {
+                    console.error(error);
+                    alert('Network error while creating target.')
+                }
+            })
+
             function activateTab(tabId) {
                 document.querySelectorAll('.tab-panel').forEach(el => {
                     el.classList.remove('active');
@@ -238,7 +358,57 @@
                 text.textContent = `${credits.toFixed(0)} credits remaining (resets ${new Date(resetAt).toLocaleString()})`;
             }
 
+            async function loadTargets() {
+                const listContainer = document.querySelector('.targets-list__div');
+
+                listContainer.querySelectorAll('.target-item').forEach(el => el.remove());
+
+                try {
+                    const res = await fetch('/targets', { credentials: 'include' });
+                    if (!res.ok) {
+                        console.error('Failed to fetch targets.');
+                        return;
+                    }
+
+                    const targets = await res.json();
+                    if (!Array.isArray(targets) || targets.length === 0) {
+                        const emptyMessage = document.createElement('p');
+                        emptyMessage.textContent = 'There are no targets yet. Create one!';
+                        listContainer.appendChild(emptyMessage);
+                        return;
+                    }
+
+                    targets.forEach(target => {
+                        const newItem = document.createElement('div');
+                        newItem.className = 'target-item';
+                        newItem.innerHTML = `
+                            <div class="target-item__main-info">
+                                <p class="target-item__name">${target.name}</p>
+                                <p class="target-item__rate">Every ${target.intervalSeconds}s</p>
+                            </div>
+                            <span style="color: #888;">${target.url}</span>
+                        `;
+                        newItem.addEventListener('click', () => openTargetConfig(target));
+                        listContainer.appendChild(newItem);
+                    });
+                } catch (err) {
+                    console.error('Error loading targets:', err);
+                }
+            }
+
+            function openTargetConfig(target) {
+                document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+                const configPanel = document.getElementById('targets__target-config');
+                configPanel.classList.add('active');
+
+                document.querySelectorAll('.inner-sidebar__item').forEach(i => i.classList.remove('active'));
+
+                const nameEl = configPanel.querySelector('.target-config-name__wrapper .page-title');
+                nameEl.textContent = target.name;
+            }
+
             loadUsageBar();
+            loadTargets();
 
             document.getElementById('save-email').addEventListener('click', async () => {
                 const email = document.getElementById('email').value.trim();

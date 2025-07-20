@@ -77,6 +77,7 @@ body {
     padding: 40px 48px;
     background-color: var(--neutral-4);
     border-radius: 16px;
+    position: relative; /* Add this to act as a positioning context */
 }
 
 .main-content__div > div {
@@ -94,6 +95,8 @@ body {
 
 .tab-panel.active {
     display: block;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .inner-sidebar-group {
@@ -171,6 +174,8 @@ body {
 }
 
 .usage-bar__wrapper {
+    display: flex;
+    flex-direction: row;
     width: 100%;
     border: dashed 2px var(--neutral-3);
     border-radius: 12px;
@@ -185,10 +190,14 @@ body {
     transition: width 0.3s ease;
 }
 
+.usage-segment {
+    height: 100%;
+}
+
 .targets-list__div {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
 }
 
 .target-create__div {
@@ -203,6 +212,7 @@ body {
     border-radius: 12px;
     padding: 24px 16px;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
 .target-config-name__wrapper {
@@ -211,6 +221,35 @@ body {
     gap: 12px;
     align-items: flex-end;
     margin-bottom: 8px;
+}
+
+.target-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    border: solid 1.5px var(--neutral-3);
+    border-radius: 12px;
+    padding: 24px 32px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.target-item .target-item__main-info {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.target-item .target-item__name {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.target-item .target-item__rate {
+    font-size: 0.8rem;
+    margin-bottom: 2.5px;
 }
 
 .target-config-name__wrapper > svg {
@@ -225,4 +264,80 @@ body {
 .target-config-name__wrapper > .page-title__input {
     font-size: 1.5rem;
     font-weight: 500;
+}
+
+.target-config-note__wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+.target-config-note__wrapper > svg {
+    cursor: pointer;
+    margin-bottom: 3px;
+}
+
+.target-config-note__wrapper > .page-subtitle__input {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+}
+
+.rate__wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+#interval__select {
+    width: 100%;
+}
+
+.action__buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    position: fixed;
+    right: 32px;
+    bottom: 32px;
+}
+
+.url-input__wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#url__input {
+    font-size: 1rem;
+}
+
+.page-warning__div {
+    position: absolute;
+    bottom: 40px;
+    left: 48px;
+    right: 48px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    border: solid 2px var(--color);
+    border-radius: 12px;
+    padding: 16px 24px;
+    background-color: var(--neutral-4);
+    box-sizing: border-box;
+}
+
+.page-warning-info__div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-warning-title {
+    font-weight: 600;
+    font-size: 1.35rem;
 }

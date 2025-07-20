@@ -300,6 +300,7 @@ const getTargetsResponse = (targets) => targets.map(t => {
         targetId: t.id,
         name: t.name,
         url: t.url,
+        intervalSeconds: t.intervalSeconds,
         status: latest.up === false ? 'down' : (latest.up === true ? 'up' : 'pending'),
         lastCheck: latest.timestamp || null,
         responseTimeMs: latest.responseTimeMs
