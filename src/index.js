@@ -362,6 +362,8 @@ async function setupDemoTargets() {
         { name: "Facebook", url: "https://www.facebook.com", intervalSeconds: 30 },
         { name: "Reeedit", url: "https://www.reeeddit.com", intervalSeconds: 30 },
         { name: "Wikipedia", url: "https://www.wikipedia.org", intervalSeconds: 30 },
+        { name: "Client of Making", url: "https://client-of-making.quntem.co.uk", intervalSeconds: 30 },
+        { name: "SOMPS", url: "https://somps.vercel.app", intervalSeconds: 30 },
     ];
 
     for (const d of demoData) {
@@ -373,6 +375,18 @@ async function setupDemoTargets() {
             const created = await prisma.target.create({ data: { ...d, userId: null } });
             scheduleCheckForTarget(created);
         }
+    }
+
+    const demoUrls = demoData.map(d => d.url);
+    const outdated = await prisma.target.findMany({ where: { userId: null, NOT: { url: { in: demoUrls } } } });
+
+    for (const oldTarget of outdated) {
+        if (targets.has(oldTarget.id)) {
+            clearInterval(targets.get(oldTarget.id).job);
+            targets.delete(oldTarget.id);
+        }
+        await prisma.targetCheck.deleteMany({ where: { targetId: oldTarget.id } });
+        await prisma.target.delete({ where: { id: oldTarget.id } });
     }
 }
 
