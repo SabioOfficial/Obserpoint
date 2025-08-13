@@ -4,64 +4,65 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url = "file:./dev.db"
+  url      = "file:./dev.db"
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  username String @unique
-  passwordHash String
-  email String? @unique
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  passwordHash  String
+  email         String?        @unique
   refreshTokens RefreshToken[]
-  targets Target[]
-  usage UserUsage?
-  usageLogs UserUsageLog[]
+  targets       Target[]
+  usage         UserUsage?
+  usageLogs     UserUsageLog[]
 }
 
 model Target {
-  id Int @id @default(autoincrement())
-  name String
-  url String @unique
+  id              Int           @id @default(autoincrement())
+  name            String
+  url             String        @unique
   intervalSeconds Int
-  userId Int?
-  user User? @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  checks TargetCheck[]
+  userId          Int?
+  createdAt       DateTime      @default(now())
+  user            User?         @relation(fields: [userId], references: [id])
+  checks          TargetCheck[]
 }
 
 model TargetCheck {
-  id Int @id @default(autoincrement())
-  targetId Int
-  target Target @relation(fields: [targetId], references: [id])
-  up Boolean
-  statusCode Int?
+  id             Int      @id @default(autoincrement())
+  targetId       Int
+  up             Boolean
+  statusCode     Int?
   responseTimeMs Int?
-  timestamp DateTime @default(now())
+  timestamp      DateTime @default(now())
+  target         Target   @relation(fields: [targetId], references: [id])
 }
 
 model RefreshToken {
-  id Int @id @default(autoincrement())
-  token String @unique
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
   expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model UserUsage {
-  id Int @id @default(autoincrement())
-  userId Int @unique
-  user User @relation(fields: [userId], references: [id])
-  credits Float @default(3000)
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  credits   Float    @default(3000)
   updatedAt DateTime @updatedAt
-  resetAt DateTime
+  resetAt   DateTime
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model UserUsageLog {
-  id Int @id @default(autoincrement())
-  userId Int
-  type String
-  cost Float
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  cost      Float
   timestamp DateTime @default(now())
-  user User @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
   @@index([userId])
 }

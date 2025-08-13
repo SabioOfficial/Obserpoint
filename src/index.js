@@ -14,7 +14,7 @@ const cors = require('cors');
 
 const app = express();
 
-const PORT = process.env.PORT || 4893;
+const PORT = process.env.PORT || 0;
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const ACCESS_TOKEN_EXPIRATION = process.env.ACCESS_TOKEN_EXPIRATION || '15m';
@@ -355,7 +355,6 @@ app.get('/demo-targets/:id/checks', async (req, res) => {
 });
 
 async function setupDemoTargets() {
-    console.log('Checking for and setting up demo targets...');
     const demoData = [
         { name: "Google", url: "https://www.google.com", intervalSeconds: 30 },
         { name: "Youtube", url: "https://www.youtube.com", intervalSeconds: 30 },
@@ -369,21 +368,17 @@ async function setupDemoTargets() {
         const existing = await prisma.target.findFirst({ where: { url: d.url, userId: null } });
 
         if (existing) {
-            console.log(`Already exists: ${d.name}`);
             scheduleCheckForTarget(existing);
         } else {
             const created = await prisma.target.create({ data: { ...d, userId: null } });
-            console.log(`Created demo target: ${d.name}`);
             scheduleCheckForTarget(created);
         }
     }
 }
 
 async function initializeMonitoringJobs() {
-    console.log('Initializing monitoring jobs for all targets in the database...');
     const allTargets = await prisma.target.findMany();
     allTargets.forEach(scheduleCheckForTarget);
-    console.log(`Initialization complete. Started ${allTargets.length} monitoring jobs.`);
 }
 
 cron.schedule('* * * * *', async () => {
@@ -410,15 +405,14 @@ cron.schedule('* * * * *', async () => {
     }
 });
 
-app.listen(PORT, async (err) => {
+const server = app.listen(PORT, async (err) => {
+    const ACTUALPORT = server.address().port
     if (err) {
         console.error('Failed to start server:', err);
         process.exit(1);
     }
-    console.log(`Obserpoint backend listening on http://localhost:${PORT}`);
+    console.log(`Obserpoint backend listening on http://localhost:${ACTUALPORT}`);
 
     await setupDemoTargets();
     await initializeMonitoringJobs();
-
-    console.log(`Frontend served from '../public' and expected at: ${FRONTEND_URL}`);
 });
