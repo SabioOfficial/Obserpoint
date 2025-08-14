@@ -110,9 +110,15 @@ function scheduleCheckForTarget(target) {
 function chargeUser(cost, type = 'unknown') {
     return async (req, res, next) => {
         if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
-            const usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
+        let usage = await prisma.userUsage.findUnique({ where: { userId: req.user.id } });
+
+        if (!usage) {
+            usage = await prisma.userUsage.create({
+                data: { userId: req.user.id, credits: 3000, resetAt: new Date(Date.now() + 24*60*60*1000) }
+            });
+        }
         
-        if (!usage || usage.credits < cost) {
+        if (usage.credits < cost) {
             return res.status(429).json({
                 message: `Not enough credits. (${usage?.credits?.toFixed(2) || 0} left)`
             });
@@ -336,6 +342,49 @@ app.delete('/targets/:id', authenticateToken, async (req, res) => {
     await prisma.targetCheck.deleteMany({ where: { targetId: id } });
     await prisma.target.delete({ where: { id } });
     res.status(200).json({ message: 'Target deleted.' });
+});
+
+app.patch('/targets/:id', authenticateToken, async (req, res) => {
+    const targetId = parseInt(req.params.id);
+    const { name, url, intervalSeconds } = req.body;
+
+    if (isNaN(targetId)) {
+        return res.status(400).json({ message: 'Invalid target ID.' });
+    }
+
+    try {
+        const existingTarget = await prisma.target.findFirst({
+            where: { id: targetId, userId: req.user.id }
+        });
+
+        if (!existingTarget) {
+            return res.status(403).json({ message: 'Access denied or target not found.' });
+        }
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (url !== undefined) updateData.url = url;
+        if (intervalSeconds !== undefined) updateData.intervalSeconds = intervalSeconds;
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No fields provided for update.' });
+        }
+
+        const updatedTarget = await prisma.target.update({
+            where: { id: targetId },
+            data: updateData
+        });
+
+        if (intervalSeconds !== undefined || url !== undefined) {
+            scheduleCheckForTarget(updatedTarget);
+        }
+
+        res.status(200).json({ message: 'Target updated successfully!', target: updatedTarget });
+
+    } catch (error) {
+        console.error('Error updating target:', error);
+        res.status(500).json({ message: 'An internal server error occurred while updating the target.' });
+    }
 });
 
 app.get('/demo-targets', async (req, res) => {
